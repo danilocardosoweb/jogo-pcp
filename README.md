@@ -1,147 +1,69 @@
-# Jogo PCP - Simulador de Gestão de Produção
+# Welcome to your Lovable project
 
-Um jogo de simulação de gestão de produção desenvolvido com tecnologias modernas web, oferecendo uma experiência interativa de gerenciamento de fábrica com visual pixel art.
+## Project info
 
-## Funcionalidades Principais
+**URL**: https://lovable.dev/projects/44e9fcb6-2cf2-45b0-b453-ca1ab7e5e354
 
-O jogo é dividido em várias áreas de gestão:
+## How can I edit this code?
 
-### 1. Recursos
-- Sistema de compra e gestão de recursos
-- Visualização de estoque em tempo real
-- Gerenciamento de custos operacionais
+There are several ways of editing your application.
 
-### 2. Planejamento
-- Catálogo de produtos disponíveis
-- Sistema de pedidos com opções de aceite/rejeição
-- Ferramentas de planejamento de produção
+**Use Lovable**
 
-### 3. Fábrica
-- Compra e gestão de máquinas
-- Sistema de manutenção e upgrades
-- Controle de produção
-- Boosters de produtividade
+Simply visit the [Lovable Project](https://lovable.dev/projects/44e9fcb6-2cf2-45b0-b453-ca1ab7e5e354) and start prompting.
 
-### 4. Inventário
-- Gestão de estoque de produtos
-- Sistema de controle de qualidade
-- Gerenciamento de armazenamento
+Changes made via Lovable will be committed automatically to this repo.
 
-### 5. Logística
-- Sistema de gerenciamento de entregas
-- Acompanhamento de pedidos em tempo real
-- Monitoramento de status de envios
+**Use your preferred IDE**
 
-### 6. Recursos Humanos
-- Sistema de contratação
-- Gestão de equipe e treinamentos
-- Sistema de motivação
-- Alocação dinâmica de trabalhadores
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
 
-### 7. Finanças
-- Controle detalhado de receitas e despesas
-- Sistema de empréstimos
-- Relatórios financeiros
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-## Arquitetura e Tecnologias
+Follow these steps:
 
-### Frontend Core
-- **React 18** com **TypeScript** para tipagem estática
-- **Vite** como bundler e dev server
-- **React Router DOM** para navegação entre páginas
-- **React Query** para gerenciamento de estado e cache
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
 
-### UI/UX
-- **Tailwind CSS** para estilização responsiva
-- **shadcn/ui** para componentes base
-- **Radix UI** para primitivos de interface acessíveis
-- Sistema de temas com **next-themes**
-- Animações com **tailwindcss-animate**
-- Notificações com **Sonner**
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
 
-### Componentes Especializados
-- **Recharts** para gráficos e visualizações
-- **date-fns** para manipulação de datas
-- **React Hook Form** com **Zod** para validação de formulários
-- **Embla Carousel** para carrosséis
-- **React Resizable Panels** para painéis ajustáveis
+# Step 3: Install the necessary dependencies.
+npm i
 
-### Estrutura do Projeto
-```
-src/
-├── components/     # Componentes reutilizáveis
-├── context/       # Contextos React
-├── hooks/         # Hooks customizados
-├── lib/           # Utilitários e configurações
-├── pages/         # Páginas da aplicação
-├── styles/        # Estilos globais
-└── types/         # Definições de tipos TypeScript
-```
-
-### Design System
-- Paleta de cores otimizada para pixel art
-- Sistema de contraste aprimorado:
-  - Cartões com bordas intensificadas (500)
-  - Fundos contrastantes (100)
-  - Textos em tons escuros (800/900)
-  - Efeitos hover suaves
-  - Bordas inativas em tons médios (300)
-
-## Instalação e Desenvolvimento
-
-```bash
-# Instalar dependências
-npm install
-
-# Iniciar servidor de desenvolvimento
+# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
-
-# Construir para produção
-npm run build
-
-# Executar linting
-npm run lint
 ```
 
-## Status de Implementação
+**Edit a file directly in GitHub**
 
-### Implementado
-- Interface principal com estilo pixel art
-- Sistema de gerenciamento de recursos
-- Mecânicas de energia e eficiência
-- Controles de produção e manutenção
-- Sistema de cumprimento de pedidos
-- Componentes UI personalizados
-- Sistema de tutorial
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-### Em Desenvolvimento
-- Sistema de conquistas
-- Sprites pixel art adicionais:
-  - Fábrica
-  - Moedas
-  - Trabalhadores
-  - Máquinas
-  - Energia
-  - Pedidos
-- Sistema de save/load
-- Efeitos sonoros e música
-- Estatísticas detalhadas de produção
+**Use GitHub Codespaces**
 
-## Como Jogar
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-1. Comece com o tutorial para aprender os conceitos básicos
-2. Gerencie seus recursos iniciais com sabedoria
-3. Aceite pedidos compatíveis com sua capacidade
-4. Expanda sua fábrica gradualmente
-5. Mantenha o equilíbrio entre produção e custos
-6. Desenvolva sua equipe e infraestrutura
+## What technologies are used for this project?
 
-## Contribuição
+This project is built with .
 
-Para contribuir com o projeto:
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-1. Fork o repositório
-2. Crie uma branch para sua feature (`git checkout -b feature/NovaFeature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
-4. Push para a branch (`git push origin feature/NovaFeature`)
-5. Abra um Pull Request
+## How can I deploy this project?
+
+Simply open [Lovable](https://lovable.dev/projects/44e9fcb6-2cf2-45b0-b453-ca1ab7e5e354) and click on Share -> Publish.
+
+## I want to use a custom domain - is that possible?
+
+We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
