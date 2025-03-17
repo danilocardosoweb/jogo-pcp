@@ -1,0 +1,23 @@
+[data-sonner-toast] {
+  background-color: #1a1a1a !important;
+  border: 2px solid #4a5568 !important;
+  color: #ffffff !important;
+  font-family: 'Press Start 2P', monospace !important;
+}
+
+[data-sonner-toast][data-type="success"] {
+  border-color: #48bb78 !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  border-color: #f56565 !important;
+}
+
+[data-sonner-toast][data-type="warning"] {
+  border-color: #ed8936 !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: #ffffff !important;
+  font-size: 0.875rem !important;
+}

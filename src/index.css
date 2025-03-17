@@ -1,0 +1,178 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@font-face {
+  font-family: 'PixelFont';
+  src: url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'PixelText';
+  src: url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+  font-weight: 400;
+  font-style: normal;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-game-bg text-game-text min-h-screen overflow-x-hidden font-sans;
+}
+
+.pixel-art {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.pixel-shadow {
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.2);
+}
+
+.pixel-border {
+  border-width: 3px;
+  image-rendering: pixelated;
+  border-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDoAABSCAABFVgAADqXAAAXb9daH5AAAAAkSURBVHjaYmRgYNBnYGBgZUACLAzogP5nYPj/H10CAAAA//8DADqWATNuPgvbAAAAAElFTkSuQmCC') 2 repeat;
+}
+
+.pixel-font {
+  font-family: 'PixelFont', monospace;
+  letter-spacing: 0.05em;
+}
+
+.pixel-text {
+  font-family: 'PixelText', monospace;
+}
+
+.pixel-button {
+  transition: all 0.1s ease;
+  transform-origin: center;
+}
+
+.pixel-button:hover {
+  transform: scale(1.05);
+}
+
+.pixel-button:active {
+  transform: scale(0.95);
+}
+
+.grid-pattern {
+  background-image: linear-gradient(to right, rgba(45, 55, 72, 0.3) 1px, transparent 1px), 
+                    linear-gradient(to bottom, rgba(45, 55, 72, 0.3) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.machine {
+  @apply relative rounded-sm bg-game-machine border-2 border-game-secondary p-2 shadow-md;
+}
+
+.machine.working {
+  @apply animate-machine-work;
+}
+
+.resource {
+  @apply rounded-sm bg-game-accent border-2 border-game-resource p-1 shadow-md;
+}
+
+.inventory-item {
+  @apply rounded-sm bg-game-success/10 border-2 border-game-success/30 p-1 shadow-md;
+}
+
+.progress-container {
+  @apply relative w-full h-4 bg-game-bg border-2 border-game-secondary rounded-sm overflow-hidden;
+}
+
+.progress-bar {
+  @apply h-full bg-game-primary transition-all duration-300 ease-in-out;
+}
+
+.overlay-panel {
+  @apply bg-game-overlay backdrop-blur-sm rounded-md border-2 border-game-secondary p-4 shadow-lg;
+}
+
+.game-card {
+  @apply bg-game-bg border-2 border-game-secondary rounded-md p-4 shadow-md transition-all duration-200 hover:shadow-lg;
+}
+
+.scrollbar-pixel::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scrollbar-pixel::-webkit-scrollbar-track {
+  @apply bg-game-bg;
+}
+
+.scrollbar-pixel::-webkit-scrollbar-thumb {
+  @apply bg-game-secondary border-2 border-game-primary;
+  image-rendering: pixelated;
+}
+
+.pixel-tooltip {
+  @apply bg-game-overlay border-2 border-game-secondary rounded-sm p-2 text-xs;
+}
+
+.resource-indicator {
+  @apply flex items-center gap-1 bg-game-bg rounded-md px-2 py-1 border border-game-secondary;
+}
+
+.indicator-icon {
+  @apply h-4 w-4 inline-block;
+}
+
+.glass-panel {
+  @apply bg-game-overlay backdrop-blur-sm rounded-md border border-game-accent/30 shadow-lg;
+}
+
+.pixel-input {
+  @apply bg-game-bg border-2 border-game-secondary rounded-sm p-2 text-game-text focus:outline-none focus:border-game-primary transition-colors duration-200;
+}
