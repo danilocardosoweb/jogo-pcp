@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ResourceManagement from './ResourceManagement';
 import ProductionPlanner from './ProductionPlanner';
@@ -7,6 +6,7 @@ import InventoryManagement from './InventoryManagement';
 import ShippingDepartment from './ShippingDepartment';
 import HRDepartment from './HRDepartment';
 import FinanceDepartment from './FinanceDepartment';
+import CommercialDepartment from './CommercialDepartment';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Database, 
@@ -15,7 +15,8 @@ import {
   TruckIcon, 
   Users, 
   Warehouse,
-  DollarSign
+  DollarSign,
+  Store
 } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import { PixelButton } from './ui/PixelButton';
@@ -41,7 +42,7 @@ const Dashboard: React.FC = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="mb-4 grid grid-cols-1 md:grid-cols-7 gap-2 bg-transparent">
+        <TabsList className="mb-4 grid grid-cols-1 md:grid-cols-8 gap-2 bg-transparent">
           <TabsTrigger 
             value="resources" 
             className={`flex items-center gap-2 pixel-text font-medium ${
@@ -51,6 +52,16 @@ const Dashboard: React.FC = () => {
             }`}
           >
             <Database className="h-4 w-4" /> Recursos
+          </TabsTrigger>
+          <TabsTrigger 
+            value="commercial" 
+            className={`flex items-center gap-2 pixel-text font-medium ${
+              activeTab === 'commercial' 
+                ? 'bg-orange-100 text-orange-800 border-2 border-orange-400' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Store className="h-4 w-4" /> Comercial
           </TabsTrigger>
           <TabsTrigger 
             value="production" 
@@ -116,6 +127,10 @@ const Dashboard: React.FC = () => {
         
         <TabsContent value="resources">
           <ResourceManagement />
+        </TabsContent>
+        
+        <TabsContent value="commercial">
+          <CommercialDepartment />
         </TabsContent>
         
         <TabsContent value="production">

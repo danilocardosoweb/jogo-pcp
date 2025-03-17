@@ -53,7 +53,7 @@ const HRDepartment: React.FC = () => {
     unmotivatedWorkers: state.workers.filter(w => w.motivation < 30).length,
     totalSalaries: state.workers.reduce((sum, worker) => sum + worker.salary, 0),
     averageMotivation: state.workers.length 
-      ? state.workers.reduce((sum, worker) => sum + worker.motivation, 0) / state.workers.length 
+      ? Number((state.workers.reduce((sum, worker) => sum + worker.motivation, 0) / state.workers.length).toFixed(2))
       : 0,
   };
   
@@ -101,7 +101,7 @@ const HRDepartment: React.FC = () => {
             <h3 className="pixel-text font-bold text-red-800">Moral da Empresa</h3>
           </div>
           <div className="text-center">
-            <span className="text-3xl font-bold text-red-900">{Math.round(state.morale)}%</span>
+            <span className="text-3xl font-bold text-red-900">{Number(state.morale).toFixed(2)}%</span>
             <Progress 
               value={state.morale} 
               className="h-2 mt-2 bg-red-200" 
@@ -120,7 +120,7 @@ const HRDepartment: React.FC = () => {
             <h3 className="pixel-text font-bold text-blue-800">Motivação Média</h3>
           </div>
           <div className="text-center">
-            <span className="text-3xl font-bold text-blue-900">{Math.round(hrStats.averageMotivation)}%</span>
+            <span className="text-3xl font-bold text-blue-900">{hrStats.averageMotivation.toFixed(2)}%</span>
             <div className="flex justify-between text-xs mt-2">
               <span className="pixel-text text-green-600 font-medium">{hrStats.motivatedWorkers} motivados</span>
               <span className="pixel-text text-red-600 font-medium">{hrStats.unmotivatedWorkers} desmotivados</span>
@@ -172,7 +172,7 @@ const HRDepartment: React.FC = () => {
                     <div>
                       <div className="flex justify-between text-xs mb-1">
                         <span className="pixel-text">Motivação</span>
-                        <span className="pixel-text">{worker.motivation}%</span>
+                        <span className="pixel-text">{Number(worker.motivation).toFixed(2)}%</span>
                       </div>
                       <Progress 
                         value={worker.motivation} 
@@ -251,7 +251,7 @@ const HRDepartment: React.FC = () => {
                             <div className="flex justify-between text-xs mb-1">
                               <span className="pixel-text">Motivação</span>
                               <span className={`pixel-text ${getWorkerStatusColor(worker.motivation)}`}>
-                                {worker.motivation}%
+                                {Number(worker.motivation).toFixed(2)}%
                               </span>
                             </div>
                             <Progress 
@@ -364,7 +364,7 @@ const HRDepartment: React.FC = () => {
                               <div className="flex justify-between text-xs mb-1">
                                 <span className="pixel-text">Motivação</span>
                                 <span className={`pixel-text ${getWorkerStatusColor(worker.motivation)}`}>
-                                  {worker.motivation}%
+                                  {Number(worker.motivation).toFixed(2)}%
                                 </span>
                               </div>
                               <Progress 

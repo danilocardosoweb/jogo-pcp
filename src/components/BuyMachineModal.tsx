@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PixelButton } from './ui/PixelButton';
 import { ShieldCheck, Building, PackageCheck } from 'lucide-react';
@@ -69,8 +68,8 @@ const BuyMachineModal: React.FC<BuyMachineModalProps> = ({ open, onOpenChange })
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-white border-4 border-game-primary">
         <DialogHeader>
-          <DialogTitle className="text-xl pixel-font text-game-primary">Comprar Nova Máquina</DialogTitle>
-          <DialogDescription className="pixel-text">
+          <DialogTitle className="text-xl pixel-font text-black">Comprar Nova Máquina</DialogTitle>
+          <DialogDescription className="pixel-text text-gray-800">
             Escolha o tipo de máquina que deseja adicionar à sua fábrica.
           </DialogDescription>
         </DialogHeader>
@@ -85,11 +84,11 @@ const BuyMachineModal: React.FC<BuyMachineModalProps> = ({ open, onOpenChange })
             >
               <div className="flex items-center gap-3">
                 <Building className="w-6 h-6 text-amber-600" />
-                <div>
-                  <h3 className="font-bold pixel-text">Linha de Montagem</h3>
-                  <p className="text-sm pixel-text">Para fabricação básica de produtos.</p>
+                <div className="flex-1">
+                  <h3 className="font-bold pixel-text text-black">Linha de Montagem</h3>
+                  <p className="text-sm pixel-text text-gray-800">Para fabricação básica de produtos.</p>
                 </div>
-                <div className="ml-auto pixel-text font-bold text-amber-700">R$ 3.000</div>
+                <div className="pixel-text font-bold text-amber-700">R$ 3.000</div>
               </div>
             </div>
             
@@ -101,11 +100,11 @@ const BuyMachineModal: React.FC<BuyMachineModalProps> = ({ open, onOpenChange })
             >
               <div className="flex items-center gap-3">
                 <PackageCheck className="w-6 h-6 text-blue-600" />
-                <div>
-                  <h3 className="font-bold pixel-text">Unidade de Embalagem</h3>
-                  <p className="text-sm pixel-text">Para embalagem de produtos finalizados.</p>
+                <div className="flex-1">
+                  <h3 className="font-bold pixel-text text-black">Unidade de Embalagem</h3>
+                  <p className="text-sm pixel-text text-gray-800">Para embalagem de produtos finalizados.</p>
                 </div>
-                <div className="ml-auto pixel-text font-bold text-blue-700">R$ 2.500</div>
+                <div className="pixel-text font-bold text-blue-700">R$ 2.500</div>
               </div>
             </div>
             
@@ -117,24 +116,25 @@ const BuyMachineModal: React.FC<BuyMachineModalProps> = ({ open, onOpenChange })
             >
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 text-green-600" />
-                <div>
-                  <h3 className="font-bold pixel-text">Controle de Qualidade</h3>
-                  <p className="text-sm pixel-text">Reduz a chance de defeitos nos produtos.</p>
+                <div className="flex-1">
+                  <h3 className="font-bold pixel-text text-black">Controle de Qualidade</h3>
+                  <p className="text-sm pixel-text text-gray-800">Reduz a chance de defeitos nos produtos.</p>
                 </div>
-                <div className="ml-auto pixel-text font-bold text-green-700">R$ 4.000</div>
+                <div className="pixel-text font-bold text-green-700">R$ 4.000</div>
               </div>
             </div>
           </div>
         </div>
         
         <DialogFooter className="flex space-x-2">
-          <PixelButton variant="outline" onClick={() => onOpenChange(false)}>
+          <PixelButton variant="secondary" onClick={() => onOpenChange(false)}>
             Cancelar
           </PixelButton>
           <PixelButton 
             variant="primary" 
             onClick={handleBuyMachine}
             disabled={!canAfford}
+            className={`${!canAfford ? 'text-gray-800' : ''}`}
           >
             {canAfford ? 'Comprar' : 'Fundos insuficientes'}
           </PixelButton>

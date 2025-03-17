@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { PlayerCharacter } from '@/types/game';
+import { toast } from 'sonner';
 
 // Resource types
 export type ResourceType = 'metal' | 'plastic' | 'electronics' | 'glass';
 
 // Product types
-export type ProductType = 'phone' | 'laptop' | 'tablet';
+export type ProductType = 'phone' | 'laptop' | 'tablet' | 'smartwatch' | 'earbuds' | 'console';
 
 // Machine types
 export type MachineType = 'assembly' | 'packaging' | 'quality';
@@ -14,7 +15,7 @@ export type MachineType = 'assembly' | 'packaging' | 'quality';
 export type MachineStatus = 'idle' | 'working' | 'maintenance' | 'packaging' | 'quality';
 
 // Order status type
-export type OrderStatus = 'pending' | 'in-progress' | 'completed' | 'failed' | 'rejected';
+export type OrderStatus = 'pending' | 'in_production' | 'completed' | 'failed' | 'rejected';
 
 // Worker skill types
 export type WorkerSkillType = 'assembly' | 'packaging' | 'quality';
@@ -70,6 +71,7 @@ export interface Machine {
   hasDefect: boolean;
   boosterActive?: boolean;
   boosterEndDay?: number;
+  assignedTo?: string; // ID do pedido ao qual a máquina está atribuída
   assignedWorkers: Worker[];
 }
 
@@ -96,6 +98,8 @@ export interface ProductionOrder {
   deadline: number;
   status: OrderStatus;
   reward: number;
+  progress: number;
+  efficiency: number;
 }
 
 // Game state interface
@@ -106,6 +110,7 @@ export interface GameState {
   character: PlayerCharacter | null;
   resources: Resource[];
   products: Product[];
+  unlockedProducts: ProductType[];
   machines: Machine[];
   orders: ProductionOrder[];
   availableOrders: ProductionOrder[];
@@ -137,6 +142,8 @@ type GameAction =
   | { type: 'UPGRADE_MACHINE'; machineId: string }
   | { type: 'ACCEPT_ORDER'; orderId: string }
   | { type: 'REJECT_ORDER'; orderId: string }
+  | { type: 'START_PRODUCTION'; orderId: string }
+  | { type: 'PAUSE_PRODUCTION'; orderId: string }
   | { type: 'TICK' }
   | { type: 'REPAIR_MACHINE'; machineId: string }
   | { type: 'SELL_PRODUCT'; productType: ProductType; amount: number }
@@ -155,7 +162,7 @@ type GameAction =
   | { type: 'TRAIN_WORKER'; workerId: string }
   | { type: 'TAKE_LOAN'; loanAmount: number; duration: number; interestRate: number }
   | { type: 'START_SIMULATION' } // New action to start the simulation
-;
+  | { type: 'UNLOCK_PRODUCT'; productType: ProductType };
 
 // Worker names pool
 const workerNames = [
@@ -208,14 +215,14 @@ const initialResources: Resource[] = [
   { type: 'glass', name: 'Glass', quantity: 50, max: 100, cost: 15, icon: '🔍' },
 ];
 
-// Initial products - Reduced production time for faster manufacturing
+// Initial products with adjusted production times
 const initialProducts: Product[] = [
   {
     type: 'phone',
     name: 'Smartphone',
     requires: { metal: 2, plastic: 3, electronics: 5, glass: 1 },
     price: 300,
-    productionTime: 3, // Reduced from 6
+    productionTime: 0.2, // 5 por dia
     icon: '📱',
   },
   {
@@ -223,7 +230,7 @@ const initialProducts: Product[] = [
     name: 'Laptop',
     requires: { metal: 5, plastic: 4, electronics: 7, glass: 2 },
     price: 500,
-    productionTime: 5, // Reduced from 10
+    productionTime: 0.33, // 3 por dia
     icon: '💻',
   },
   {
@@ -231,8 +238,36 @@ const initialProducts: Product[] = [
     name: 'Tablet',
     requires: { metal: 3, plastic: 3, electronics: 4, glass: 3 },
     price: 350,
-    productionTime: 4, // Reduced from 8
+    productionTime: 0.25, // 4 por dia
     icon: '📲',
+  },
+];
+
+// Novos produtos disponíveis para desbloqueio
+export const unlockableProducts: Product[] = [
+  {
+    type: 'smartwatch',
+    name: 'Smartwatch',
+    requires: { metal: 1, plastic: 2, electronics: 3, glass: 1 },
+    price: 200,
+    productionTime: 0.2, // 5 por dia
+    icon: '⌚',
+  },
+  {
+    type: 'earbuds',
+    name: 'Fones Sem Fio',
+    requires: { metal: 1, plastic: 2, electronics: 2 },
+    price: 150,
+    productionTime: 0.17, // 6 por dia
+    icon: '🎧',
+  },
+  {
+    type: 'console',
+    name: 'Console Portátil',
+    requires: { metal: 4, plastic: 3, electronics: 6, glass: 2 },
+    price: 450,
+    productionTime: 0.25, // 4 por dia
+    icon: '🎮',
   },
 ];
 
@@ -283,51 +318,51 @@ const generateOrderDeadline = (productType: ProductType, currentDay: number): nu
 };
 
 // Sample orders
-const createSampleOrders = (): ProductionOrder[] => [
-  {
-    id: 'o1',
-    product: 'phone',
-    quantity: 5,
-    completed: 0,
-    deadline: 15, // Much more reasonable deadline
-    status: 'pending',
-    reward: 5 * (300 * 1.2), // 5 phones com preço 300 + 20% imposto
-  },
-  {
-    id: 'o2',
-    product: 'laptop',
-    quantity: 3,
-    completed: 0,
-    deadline: 20,
-    status: 'pending',
-    reward: 3 * (600 * 1.2), // 3 laptops com preço 600 + 20% imposto
-  },
-  {
-    id: 'o3',
-    product: 'tablet',
-    quantity: 4,
-    completed: 0,
-    deadline: 18,
-    status: 'pending',
-    reward: 4 * (400 * 1.2), // 4 tablets com preço 400 + 20% imposto
-  },
-];
+const createSampleOrders = (): ProductionOrder[] => {
+  const orders: ProductionOrder[] = [];
+  const products: ProductType[] = ['phone', 'laptop', 'tablet'];
+  
+  for (let i = 0; i < 3; i++) {
+    const product = products[Math.floor(Math.random() * products.length)];
+    const quantity = Math.floor(Math.random() * 50) + 10;
+    const basePrice = product === 'phone' ? 1000 : product === 'laptop' ? 2000 : 1500;
+    const reward = quantity * basePrice * (1 + Math.random() * 0.3); // Base price + up to 30% margin
+    
+    orders.push({
+      id: `order_${Date.now()}_${i}`,
+      product,
+      quantity,
+      completed: 0,
+      deadline: Math.floor(Math.random() * 10) + 5, // 5-15 days
+      status: 'pending',
+      reward,
+      progress: 0,
+      efficiency: 0.8 + Math.random() * 0.4, // 80-120% efficiency
+    });
+  }
+  
+  return orders;
+};
 
 // Initial game state
 const initialState: GameState = {
-  money: 50000, // Increased from 5000 to 50000
+  money: 150000, // Increased initial capital to 150.000
   day: 1,
   simulationStarted: false, // New flag to track if simulation has started
   character: null,
   resources: initialResources,
   products: initialProducts,
+  unlockedProducts: ['phone', 'laptop', 'tablet'],
   machines: initialMachines,
   orders: [],
   availableOrders: createSampleOrders(),
   inventory: {
     phone: 0,
     laptop: 0,
-    tablet: 0
+    tablet: 0,
+    smartwatch: 0,
+    earbuds: 0,
+    console: 0
   },
   gamePace: 1, // Default game pace (1 = normal)
   workers: [],
@@ -346,6 +381,23 @@ const initialState: GameState = {
     workersMotivated: 0,
     loansTaken: 0,
   },
+};
+
+// Função para calcular a eficiência do trabalhador
+const calculateWorkerEfficiency = (worker: Worker): number => {
+  const baseEfficiency = 0.5; // 50% de eficiência base
+  const skillBonus = worker.skillLevel * 0.1; // Cada nível adiciona 10%
+  const motivationBonus = (worker.motivation / 100) * 0.5; // Motivação máxima adiciona 50%
+  
+  return Math.min(baseEfficiency + skillBonus + motivationBonus, 1.5); // Máximo de 150% de eficiência
+};
+
+// Função para calcular a capacidade produtiva total
+const calculateTotalProductionCapacity = (state: GameState): number => {
+  const workingMachines = state.machines.filter(m => m.status === 'working').length;
+  const totalWorkerEfficiency = state.workers.reduce((acc, worker) => acc + calculateWorkerEfficiency(worker), 0);
+  
+  return Math.floor(workingMachines * (totalWorkerEfficiency / state.workers.length) * 10); // Cada máquina pode produzir até 10 itens por dia
 };
 
 // Reducer function
@@ -378,41 +430,18 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     
     case 'ASSIGN_MACHINE': {
       const { machineId, productType } = action;
-      const machineIndex = state.machines.findIndex((m) => m.id === machineId);
-      
-      if (machineIndex === -1) return state;
-      
-      const product = state.products.find((p) => p.type === productType);
-      if (!product) return state;
-      
-      const canProduce = Object.entries(product.requires).every(([resourceType, amount]) => {
-        const resource = state.resources.find((r) => r.type === resourceType as ResourceType);
-        return resource && resource.quantity >= (amount as number);
-      });
-      
-      if (!canProduce) return state;
-      
-      const updatedResources = state.resources.map((resource) => {
-        const required = product.requires[resource.type] || 0;
-        return {
-          ...resource,
-          quantity: resource.quantity - required,
-        };
-      });
-      
-      const updatedMachines = [...state.machines];
-      updatedMachines[machineIndex] = {
-        ...state.machines[machineIndex],
-        status: 'working',
-        currentProduct: productType,
-        progress: 0,
-        maxProgress: product.productionTime * 100,
-      };
-      
       return {
         ...state,
-        resources: updatedResources,
-        machines: updatedMachines,
+        machines: state.machines.map((machine) =>
+          machine.id === machineId
+            ? {
+                ...machine,
+                currentProduct: productType,
+                status: 'working',
+                assignedTo: state.orders.find(o => o.product === productType)?.id
+              }
+            : machine
+        ),
       };
     }
     
@@ -464,16 +493,25 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     
     case 'ACCEPT_ORDER': {
       const { orderId } = action;
-      const orderIndex = state.availableOrders.findIndex((o) => o.id === orderId);
+      const order = state.availableOrders.find(o => o.id === orderId);
+      const updatedAvailableOrders = state.availableOrders.filter(o => o.id !== orderId);
       
-      if (orderIndex === -1) return state;
+      if (!order) return state;
       
-      const order = state.availableOrders[orderIndex];
-      const updatedAvailableOrders = state.availableOrders.filter((o) => o.id !== orderId);
+      // Verifica se o prazo já expirou
+      if (order.deadline - state.day <= 0) {
+        toast.error('Não é possível aceitar pedidos com prazo expirado');
+        return state;
+      }
       
       return {
         ...state,
-        orders: [...state.orders, { ...order, status: 'in-progress' as OrderStatus }],
+        orders: [...state.orders, { 
+          ...order, 
+          status: 'pending' as OrderStatus,
+          progress: 0,
+          efficiency: 0.8 + Math.random() * 0.4 // 80-120% efficiency
+        }],
         availableOrders: updatedAvailableOrders,
       };
     }
@@ -854,6 +892,16 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
     }
     
     case 'TICK': {
+      // Primeiro, remove pedidos disponíveis com prazo expirado
+      const currentAvailableOrders = state.availableOrders.filter(order => {
+        const remainingDays = order.deadline - state.day;
+        if (remainingDays <= 0) {
+          toast.info(`Pedido expirado removido: ${order.product}`);
+          return false;
+        }
+        return true;
+      });
+      
       // Generate new worker candidate every ~3 days
       const shouldGenerateNewWorker = Math.random() > 0.7 && state.availableWorkers.length < 5;
       let newAvailableWorkers = [...state.availableWorkers];
@@ -888,7 +936,8 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // Calculate overall factory morale based on worker motivation
       let newMorale = state.morale;
       if (updatedWorkers.length > 0) {
-        const avgMotivation = updatedWorkers.reduce((sum, w) => sum + w.motivation, 0) / updatedWorkers.length;
+        const avgMotivation = updatedWorkers.reduce((sum, w) => sum + w.motivation, 0) / 
+                            Math.max(updatedWorkers.length, 1);
         // Slowly adjust morale towards avg motivation
         newMorale = state.morale + (avgMotivation - state.morale) * 0.1;
         newMorale = Math.max(0, Math.min(100, newMorale));
@@ -911,12 +960,31 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         const product = state.products.find((p) => p.type === updatedMachine.currentProduct);
         if (!product) return updatedMachine;
 
+        // Verificar se há recursos suficientes para continuar a produção
+        const hasEnoughResources = Object.entries(product.requires).every(([resourceType, amount]) => {
+          const resource = state.resources.find(r => r.type === resourceType);
+          return resource && resource.quantity >= amount;
+        });
+
+        if (!hasEnoughResources) {
+          toast.error(`Recursos insuficientes para produzir ${product.name}`);
+          return {
+            ...updatedMachine,
+            status: 'idle' as MachineStatus,
+            progress: 0,
+            currentProduct: undefined,
+          };
+        }
+
         // Calculate worker bonus
         let workerSpeedBonus = 0;
         let workerQualityBonus = 0;
         
         // Get assigned workers for this machine
-        const assignedWorkers = updatedWorkers.filter(w => w.machineId === updatedMachine.id);
+        const assignedWorkers = updatedWorkers.filter(w => 
+          w.machineId === updatedMachine.id && 
+          state.machines.some(m => m.status === 'working' && m.assignedTo === updatedMachine.assignedTo)
+        );
         
         assignedWorkers.forEach(worker => {
           // Calculate speed bonus based on skill relevance and level
@@ -935,7 +1003,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         if (assignedWorkers.length > 1) {
           workerSpeedBonus = workerSpeedBonus * Math.sqrt(assignedWorkers.length);
         }
-        
+
         let progressIncrement = (updatedMachine.productionSpeed * 5 + workerSpeedBonus) * updatedMachine.efficiency;
         
         if (updatedMachine.boosterActive) {
@@ -951,6 +1019,21 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         const hasDefect = Math.random() < defectChance;
         
         if (newProgress >= updatedMachine.maxProgress) {
+          // Consumir recursos necessários
+          const updatedResources = state.resources.map(resource => {
+            const requiredAmount = product.requires[resource.type as ResourceType];
+            if (requiredAmount) {
+              return {
+                ...resource,
+                quantity: Math.max(0, resource.quantity - requiredAmount)
+              };
+            }
+            return resource;
+          });
+          
+          // Atualizar recursos do estado
+          state.resources = updatedResources;
+
           if (hasDefect) {
             return {
               ...updatedMachine,
@@ -1007,109 +1090,73 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       // Remove fully paid loans
       updatedLoans = updatedLoans.filter(loan => loan.remainingDays > 0);
       
-      // Adjust inventory based on completed products
-      const updatedInventory = { ...state.inventory };
-      
-      state.machines.forEach(machine => {
-        // Calculate progress increment based on boosters, game pace, and workers
-        let progressIncrement = machine.productionSpeed * 3; // Increased base speed
-        
-        // Add worker speed bonus
-        const assignedWorkers = updatedWorkers.filter(w => w.machineId === machine.id);
-        assignedWorkers.forEach(worker => {
-          const isSkillRelevant = 
-            (worker.skill === 'assembly' && machine.type === 'assembly') ||
-            (worker.skill === 'packaging' && machine.type === 'packaging') ||
-            (worker.skill === 'quality' && machine.type === 'quality');
+      // Atualiza eficiência dos trabalhadores em produção
+      const updatedOrders = state.orders.map(order => {
+        if (order.status === 'in_production') {
+          // Encontra máquinas e trabalhadores atribuídos a este pedido
+          const assignedMachines = state.machines.filter(m => m.assignedTo === order.id && m.status === 'working');
+          const assignedWorkers = updatedWorkers.filter(w => 
+            w.machineId && assignedMachines.some(m => m.id === w.machineId)
+          );
           
-          const skillMultiplier = isSkillRelevant ? 1.5 : 0.5;
-          const motivationFactor = worker.motivation / 100;
+          const totalEfficiency = assignedWorkers.reduce((acc, worker) => 
+            acc + calculateWorkerEfficiency(worker), 0
+          ) / Math.max(assignedWorkers.length, 1);
           
-          progressIncrement += (worker.skillLevel * 0.2 * skillMultiplier * motivationFactor);
-        });
-        
-        // More workers = more production, but with diminishing returns
-        if (assignedWorkers.length > 1) {
-          progressIncrement = progressIncrement * Math.sqrt(assignedWorkers.length);
-        }
-        
-        progressIncrement *= machine.efficiency;
-        
-        if (machine.boosterActive) {
-          progressIncrement *= 3;
-        }
-
-        // Apply game pace adjustment
-        progressIncrement = progressIncrement * state.gamePace;
-        
-        if (machine.status === 'working' && machine.currentProduct && !machine.hasDefect &&
-            machine.progress + progressIncrement >= machine.maxProgress) {
-          updatedInventory[machine.currentProduct] += 1;
-          totalProduced += 1;
-        }
-      });
-      
-      let ordersCompleted = state.stats.ordersCompleted;
-      let ordersFailed = state.stats.ordersFailed;
-      
-      const updatedOrders = state.orders.map((order) => {
-        if (order.status === 'completed' || order.status === 'failed') return order;
-        
-        const product = state.products.find((p) => p.type === order.product);
-        if (!product) return order;
-        
-        const inventoryAmount = updatedInventory[order.product];
-        const neededAmount = Math.min(order.quantity - order.completed, inventoryAmount);
-        
-        if (neededAmount > 0) {
-          updatedInventory[order.product] -= neededAmount;
-          const newCompleted = order.completed + neededAmount;
-          
-          if (newCompleted >= order.quantity) {
-            moneyEarned += order.reward;
-            ordersCompleted += 1;
-            return {
-              ...order,
-              completed: order.quantity,
-              status: 'completed' as OrderStatus,
-            };
-          }
+          const progressIncrease = totalEfficiency * (assignedWorkers.length > 0 ? 1 : 0);
+          const newProgress = Math.min(order.progress + progressIncrease, order.quantity);
           
           return {
             ...order,
-            completed: newCompleted,
+            progress: newProgress,
+            efficiency: totalEfficiency,
+            completed: Math.floor(newProgress),
+            status: newProgress >= order.quantity ? 'completed' as OrderStatus : order.status
           };
         }
-        
-        if (state.day >= order.deadline) {
-          ordersFailed += 1;
-          return {
-            ...order,
-            status: 'failed' as OrderStatus,
-          };
-        }
-        
         return order;
       });
       
-      const shouldGenerateNewOrder = Math.random() > 0.7;
-      let newAvailableOrders = [...state.availableOrders];
+      // Gera novos pedidos com base na capacidade produtiva
+      const productionCapacity = calculateTotalProductionCapacity(state);
+      const currentOrdersLoad = state.orders.reduce((acc, order) => 
+        acc + (order.quantity - order.completed), 0
+      );
+      const availableCapacity = Math.max(productionCapacity - currentOrdersLoad, 0);
       
-      if (shouldGenerateNewOrder && newAvailableOrders.length < 5) {
+      let newAvailableOrders = [...currentAvailableOrders];
+      const shouldGenerateNewOrder = Math.random() < 0.3 && // 30% de chance por dia
+                                   newAvailableOrders.length < 5 && // Máximo de 5 pedidos disponíveis
+                                   availableCapacity > 0; // Só gera se houver capacidade
+      
+      if (shouldGenerateNewOrder) {
         const productType = state.products[Math.floor(Math.random() * state.products.length)].type;
-        const quantity = Math.floor(Math.random() * 5) + 3;
-        // Generate more reasonable deadline based on the product type and current day
-        const deadline = generateOrderDeadline(productType, state.day);
+        // Quantidade baseada na capacidade disponível
+        const maxQuantity = Math.min(availableCapacity, 50);
+        const quantity = Math.floor(Math.random() * (maxQuantity * 0.7)) + Math.ceil(maxQuantity * 0.3);
+        
+        // Prazo baseado na quantidade e eficiência média atual
+        const avgEfficiency = updatedWorkers.reduce((acc, w) => acc + calculateWorkerEfficiency(w), 0) / 
+                            Math.max(updatedWorkers.length, 1);
+        const estimatedDays = Math.ceil((quantity / avgEfficiency) / 5); // Assume 5 itens por dia por máquina
+        const deadline = state.day + Math.max(estimatedDays + 2, 5); // Mínimo de 5 dias
+        
         const product = state.products.find(p => p.type === productType);
+        if (!product) return state;
+        
+        const baseReward = quantity * product.price;
+        const urgencyMultiplier = 1 + (0.5 * (10 / Math.max(deadline - state.day, 1))); // Mais urgente = maior recompensa
         
         const newOrder: ProductionOrder = {
-          id: `o${Date.now()}`,
+          id: `order_${Date.now()}`,
           product: productType,
           quantity,
           completed: 0,
           deadline,
-          status: 'pending' as OrderStatus,
-          reward: product ? quantity * (product.price * 1.2) : 1000, // Incluindo 20% de imposto no valor da NF
+          status: 'pending',
+          reward: Math.floor(baseReward * urgencyMultiplier),
+          progress: 0,
+          efficiency: 0
         };
         
         newAvailableOrders = [...newAvailableOrders, newOrder];
@@ -1121,7 +1168,6 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         money: state.money + moneyEarned - moneySpenOnSalaries - loanPayments,
         machines: updatedMachines,
         orders: updatedOrders,
-        inventory: updatedInventory,
         availableOrders: newAvailableOrders,
         workers: updatedWorkers,
         availableWorkers: newAvailableWorkers,
@@ -1131,8 +1177,9 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
           ...state.stats,
           totalProduced,
           totalEarned: state.stats.totalEarned + moneyEarned,
-          ordersCompleted,
-          ordersFailed,
+          ordersCompleted: state.stats.ordersCompleted,
+          ordersFailed: state.stats.ordersFailed,
+          ordersRejected: state.stats.ordersRejected,
         },
       };
     }
@@ -1168,6 +1215,71 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         availableOrders: initialOrders,
         availableWorkers: initialAvailableWorkers,
         gamePace: 1.0 // Ensure game pace is set to normal speed
+      };
+    }
+    
+    case 'START_PRODUCTION': {
+      const { orderId } = action;
+      const orderIndex = state.orders.findIndex(o => o.id === orderId);
+      
+      if (orderIndex === -1) return state;
+      
+      const order = state.orders[orderIndex];
+      
+      return {
+        ...state,
+        orders: state.orders.map((o, i) =>
+          i === orderIndex ? { ...o, status: 'in_production' } : o
+        ),
+      };
+    }
+    
+    case 'PAUSE_PRODUCTION': {
+      const { orderId } = action;
+      const orderIndex = state.orders.findIndex(o => o.id === orderId);
+      
+      if (orderIndex === -1) return state;
+      
+      const order = state.orders[orderIndex];
+      
+      return {
+        ...state,
+        orders: state.orders.map((o, i) =>
+          i === orderIndex ? { ...o, status: 'pending' } : o
+        ),
+      };
+    }
+    
+    case 'UNLOCK_PRODUCT': {
+      const { productType } = action;
+      
+      // Verificar se o produto já está desbloqueado
+      if (state.unlockedProducts.includes(productType)) {
+        toast.error('Este produto já está desbloqueado!');
+        return state;
+      }
+
+      // Encontrar o produto nos produtos desbloqueáveis
+      const productToUnlock = unlockableProducts.find(p => p.type === productType);
+      if (!productToUnlock) {
+        toast.error('Produto não encontrado!');
+        return state;
+      }
+
+      // Custo para desbloquear o produto (baseado no preço)
+      const unlockCost = productToUnlock.price * 100;
+      if (state.money < unlockCost) {
+        toast.error('Dinheiro insuficiente para desbloquear este produto!');
+        return state;
+      }
+
+      toast.success(`${productToUnlock.name} desbloqueado com sucesso!`);
+
+      return {
+        ...state,
+        money: state.money - unlockCost,
+        products: [...state.products, productToUnlock],
+        unlockedProducts: [...state.unlockedProducts, productType],
       };
     }
     

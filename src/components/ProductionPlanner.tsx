@@ -1,197 +1,307 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useGame } from '@/context/GameContext';
 import { PixelCard } from './ui/PixelCard';
 import { PixelButton } from './ui/PixelButton';
+import { 
+  ClipboardList, 
+  PlayCircle, 
+  PauseCircle,
+  Settings,
+  AlertTriangle,
+  Clock,
+  DollarSign,
+  Package,
+  Boxes,
+  Lock,
+  Unlock
+} from 'lucide-react';
+import { toast } from 'sonner';
 import { formatMoney } from '@/lib/utils';
-import { Ban, CheckCircle2, Edit, Check } from 'lucide-react';
-import { Input } from './ui/input';
-import { ProductType, Product } from '@/context/GameContext';
+import { unlockableProducts, ProductType } from '@/context/GameContext';
 
 const ProductionPlanner: React.FC = () => {
   const { state, dispatch } = useGame();
-  const [editingProductId, setEditingProductId] = useState<ProductType | null>(null);
-  const [tempProfit, setTempProfit] = useState<{ [key in ProductType]?: number }>({});
 
-  const calculateProductCosts = (product: Product) => {
-    const rawMaterialsCost = Object.entries(product.requires).reduce((total, [resourceType, amount]) => {
+  const handleStartProduction = (orderId: string) => {
+    dispatch({ type: 'START_PRODUCTION', orderId });
+    toast.success('Produção iniciada!');
+  };
+
+  const handlePauseProduction = (orderId: string) => {
+    dispatch({ type: 'PAUSE_PRODUCTION', orderId });
+    toast.info('Produção pausada');
+  };
+
+  const handleUnlockProduct = (productType: ProductType) => {
+    dispatch({ type: 'UNLOCK_PRODUCT', productType });
+  };
+
+  const getResourceCost = (product: any) => {
+    return Object.entries(product.requires).reduce((total, [resourceType, amount]) => {
       const resource = state.resources.find(r => r.type === resourceType);
-      return total + (resource?.cost || 0) * (amount || 0);
+      return total + (resource ? resource.cost * (amount as number) : 0);
     }, 0);
-
-    const currentProfit = product.price - rawMaterialsCost;
-    return { rawMaterialsCost, currentProfit };
   };
 
-  const handleProfitChange = (productType: ProductType, profit: number) => {
-    setTempProfit(prev => ({ ...prev, [productType]: profit }));
-  };
-
-  const confirmProfitChange = (productType: ProductType) => {
-    const product = state.products.find(p => p.type === productType);
-    if (!product) return;
-
-    const profit = tempProfit[productType] || 0;
-    const { rawMaterialsCost } = calculateProductCosts(product);
-    const newPrice = rawMaterialsCost + profit;
-
-    dispatch({ 
-      type: 'SET_PRODUCT_PRICE', 
-      productType,
-      price: newPrice 
-    });
-
-    setEditingProductId(null);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent, productType: ProductType) => {
-    if (e.key === 'Enter') {
-      confirmProfitChange(productType);
-    }
+  const getUnlockCost = (product: any) => {
+    return product.price * 100;
   };
 
   return (
     <div className="mb-8 animate-fade-in">
-      <h2 className="text-2xl pixel-font text-blue-400 mb-4">Planejamento de Produção</h2>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Available Products */}
-        <div>
-          <h3 className="pixel-text text-lg mb-3 text-blue-300">Produtos</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {state.products.map(product => {
-              const { rawMaterialsCost, currentProfit } = calculateProductCosts(product);
-              const isEditing = editingProductId === product.type;
-              const displayPrice = isEditing 
-                ? rawMaterialsCost + (tempProfit[product.type] || 0)
-                : product.price;
-              
-              return (
-                <PixelCard key={product.type} variant="outline" animate className="bg-gray-900">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="pixel-text font-bold flex items-center gap-1 text-blue-300">
-                      <span>{product.icon}</span> {product.name}
-                    </h4>
-                    <div className="flex items-center gap-2">
-                      <span className="pixel-text text-green-400">{formatMoney(displayPrice)}</span>
-                      <PixelButton 
-                        variant="secondary" 
-                        size="sm" 
-                        onClick={() => {
-                          setEditingProductId(product.type);
-                          setTempProfit(prev => ({ ...prev, [product.type]: currentProfit }));
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </PixelButton>
-                    </div>
-                  </div>
-                  
-                  {isEditing ? (
-                    <div className="flex gap-2 mb-3">
-                      <Input 
-                        type="number" 
-                        placeholder="Lucro desejado" 
-                        value={tempProfit[product.type] || 0}
-                        onChange={(e) => handleProfitChange(product.type, parseFloat(e.target.value) || 0)}
-                        onKeyPress={(e) => handleKeyPress(e, product.type)}
-                        className="w-full bg-gray-800 text-white placeholder:text-gray-400"
-                      />
-                      <PixelButton 
-                        variant="success" 
-                        size="sm" 
-                        onClick={() => confirmProfitChange(product.type)}
-                      >
-                        <Check className="h-4 w-4" />
-                      </PixelButton>
-                    </div>
-                  ) : null}
-                  
-                  <div className="space-y-1 mb-3">
-                    <p className="pixel-text text-sm text-gray-300">Tempo de Produção: {product.productionTime} dias</p>
-                    <p className="pixel-text text-sm text-gray-300">Custo de Matérias-Primas: {formatMoney(rawMaterialsCost)}</p>
-                    <p className="pixel-text text-sm text-gray-300">Lucro Atual: {formatMoney(currentProfit)}</p>
-                    <p className="pixel-text text-sm text-gray-300">Recursos necessários:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(product.requires).map(([resourceType, amount]) => (
-                        <span 
-                          key={resourceType}
-                          className="pixel-text text-sm bg-gray-800 text-blue-300 px-2 py-1 rounded-sm"
-                        >
-                          {state.resources.find(r => r.type === resourceType)?.icon} {amount}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </PixelCard>
-              );
-            })}
-          </div>
-        </div>
-        
-        {/* Available Orders */}
-        <div>
-          <h3 className="pixel-text text-lg mb-3 text-blue-300">Pedidos Disponíveis</h3>
-          {state.availableOrders.length > 0 ? (
-            <div className="space-y-3">
-              {state.availableOrders.map(order => {
-                const product = state.products.find(p => p.type === order.product);
-                if (!product) return null;
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl pixel-font text-game-primary">Planejamento da Produção</h2>
+      </div>
 
-                return (
-                  <PixelCard key={order.id} variant="glass" animate className="bg-gray-900">
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="pixel-text font-bold text-blue-300">
-                        {product.icon} {product.name}
-                      </h4>
-                      <span className="bg-blue-600 text-white px-2 py-1 rounded-sm text-xs">
-                        {order.quantity} unidades
-                      </span>
-                    </div>
-                    
-                    <div className="mb-3">
-                      <div className="flex justify-between text-sm">
-                        <span className="pixel-text text-gray-300">Prazo: Dia {order.deadline} (Atual: Dia {state.day})</span>
-                        <span className="pixel-text text-green-400">Valor da NF: {formatMoney(order.reward)}</span>
-                      </div>
-                      <div className="mt-1">
-                        <span className="pixel-text font-bold text-blue-300">
-                          Prazo de entrega: {order.deadline - state.day} dias
-                        </span>
-                      </div>
-                      <div className="mt-2">
-                        <span className="pixel-text text-gray-300">Valor de Venda: {formatMoney(product.price * order.quantity)}</span>
-                        <span className="pixel-text ml-2 text-gray-300">Imposto: {formatMoney(product.price * order.quantity * 0.2)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end gap-2">
-                      <PixelButton 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={() => dispatch({ type: 'REJECT_ORDER', orderId: order.id })}
-                        icon={<Ban className="h-4 w-4" />}
-                      >
-                        Negar Pedido
-                      </PixelButton>
-                      <PixelButton 
-                        variant="success" 
-                        size="sm"
-                        onClick={() => dispatch({ type: 'ACCEPT_ORDER', orderId: order.id })}
-                        icon={<CheckCircle2 className="h-4 w-4" />}
-                      >
-                        Aceitar Pedido
-                      </PixelButton>
-                    </div>
-                  </PixelCard>
-                );
-              })}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <PixelCard className="bg-emerald-100 border-2 border-emerald-300">
+          <div className="flex items-center gap-2 mb-2">
+            <PlayCircle className="h-5 w-5 text-emerald-600" />
+            <h3 className="pixel-text font-bold text-emerald-800">Em Produção</h3>
+          </div>
+          <div className="text-center">
+            <span className="text-3xl font-bold text-emerald-900">
+              {state.orders.filter(order => order.status === 'in_production').length}
+            </span>
+            <p className="text-xs pixel-text mt-1 text-emerald-700">Pedidos ativos</p>
+          </div>
+        </PixelCard>
+
+        <PixelCard className="bg-amber-100 border-2 border-amber-300">
+          <div className="flex items-center gap-2 mb-2">
+            <PauseCircle className="h-5 w-5 text-amber-600" />
+            <h3 className="pixel-text font-bold text-amber-800">Aguardando</h3>
+          </div>
+          <div className="text-center">
+            <span className="text-3xl font-bold text-amber-900">
+              {state.orders.filter(order => order.status === 'pending').length}
+            </span>
+            <p className="text-xs pixel-text mt-1 text-amber-700">Pedidos pendentes</p>
+          </div>
+        </PixelCard>
+
+        <PixelCard className="bg-red-100 border-2 border-red-300">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle className="h-5 w-5 text-red-600" />
+            <h3 className="pixel-text font-bold text-red-800">Atrasados</h3>
+          </div>
+          <div className="text-center">
+            <span className="text-3xl font-bold text-red-900">
+              {state.orders.filter(order => order.deadline <= state.day).length}
+            </span>
+            <p className="text-xs pixel-text mt-1 text-red-700">Pedidos em atraso</p>
+          </div>
+        </PixelCard>
+      </div>
+
+      <h3 className="pixel-text text-lg mb-3 text-blue-300">Produtos Disponíveis</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {state.products.map(product => (
+          <PixelCard key={product.type} className="bg-gray-900 hover:bg-gray-800 transition-colors">
+            <div className="flex justify-between items-center mb-3">
+              <h4 className="pixel-text text-white flex items-center gap-2">
+                <span>{product.icon}</span>
+                <span>{product.name}</span>
+              </h4>
+              <span className="pixel-text text-green-400">{formatMoney(product.price)}</span>
             </div>
-          ) : (
-            <PixelCard variant="glass" className="bg-gray-900">
-              <p className="pixel-text text-center py-8 text-gray-300">Nenhum pedido disponível no momento. Verifique mais tarde!</p>
+
+            <div className="space-y-2 mb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-blue-400" />
+                  <span className="pixel-text text-sm text-blue-300">
+                    Produção por Dia:
+                  </span>
+                </div>
+                <span className="pixel-text text-sm text-white">{Math.round(1/product.productionTime)}</span>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-emerald-400" />
+                  <span className="pixel-text text-sm text-emerald-300">
+                    Custo de Recursos:
+                  </span>
+                </div>
+                <span className="pixel-text text-sm text-white">{formatMoney(getResourceCost(product))}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Boxes className="h-4 w-4 text-purple-400" />
+                <span className="pixel-text text-sm text-purple-300">Recursos Necessários:</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {Object.entries(product.requires).map(([resourceType, amount]) => {
+                  const resource = state.resources.find(r => r.type === resourceType);
+                  return (
+                    <div key={resourceType} className="flex items-center justify-between bg-gray-800 p-2 rounded">
+                      <span className="pixel-text text-xs text-gray-300">{resource?.icon} {resource?.name}</span>
+                      <span className="pixel-text text-xs text-white">{amount}x</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </PixelCard>
+        ))}
+      </div>
+
+      <h3 className="pixel-text text-lg mb-3 text-amber-300">Produtos para Desbloqueio</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {unlockableProducts
+          .filter(p => !state.unlockedProducts.includes(p.type))
+          .map(product => (
+            <PixelCard key={product.type} className="bg-gray-900 hover:bg-gray-800 transition-colors relative">
+              <div className="absolute top-2 right-2">
+                <span className="bg-amber-500 text-white px-2 py-1 rounded text-xs pixel-text">
+                  Novo!
+                </span>
+              </div>
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="pixel-text text-white flex items-center gap-2">
+                  <span>{product.icon}</span>
+                  <span>{product.name}</span>
+                </h4>
+                <span className="pixel-text text-amber-400">{formatMoney(product.price)}</span>
+              </div>
+
+              <div className="space-y-2 mb-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-400" />
+                    <span className="pixel-text text-sm text-blue-300">
+                      Produção por Dia:
+                    </span>
+                  </div>
+                  <span className="pixel-text text-sm text-white">{Math.round(1/product.productionTime)}</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-emerald-400" />
+                    <span className="pixel-text text-sm text-emerald-300">
+                      Custo de Recursos:
+                    </span>
+                  </div>
+                  <span className="pixel-text text-sm text-white">{formatMoney(getResourceCost(product))}</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Lock className="h-4 w-4 text-amber-400" />
+                    <span className="pixel-text text-sm text-amber-300">
+                      Custo para Desbloquear:
+                    </span>
+                  </div>
+                  <span className="pixel-text text-sm text-white">{formatMoney(getUnlockCost(product))}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Boxes className="h-4 w-4 text-purple-400" />
+                  <span className="pixel-text text-sm text-purple-300">Recursos Necessários:</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.entries(product.requires).map(([resourceType, amount]) => {
+                    const resource = state.resources.find(r => r.type === resourceType);
+                    return (
+                      <div key={resourceType} className="flex items-center justify-between bg-gray-800 p-2 rounded">
+                        <span className="pixel-text text-xs text-gray-300">{resource?.icon} {resource?.name}</span>
+                        <span className="pixel-text text-xs text-white">{amount}x</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <PixelButton
+                  variant="warning"
+                  size="sm"
+                  onClick={() => handleUnlockProduct(product.type)}
+                  className="w-full"
+                  icon={<Unlock className="h-4 w-4" />}
+                >
+                  Desbloquear por {formatMoney(getUnlockCost(product))}
+                </PixelButton>
+              </div>
             </PixelCard>
-          )}
-        </div>
+          ))}
+      </div>
+
+      <h3 className="pixel-text text-lg mb-3 text-blue-300">Ordens de Produção</h3>
+      <div className="space-y-3">
+        {state.orders.length > 0 ? (
+          state.orders.map(order => (
+            <PixelCard key={order.id} className="bg-gray-900">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="pixel-text text-white flex items-center gap-2">
+                  <span>{order.product.charAt(0).toUpperCase() + order.product.slice(1)}</span>
+                </h4>
+                <span className={`pixel-text ${
+                  order.status === 'in_production' ? 'text-green-400' :
+                  order.status === 'pending' ? 'text-amber-400' :
+                  'text-red-400'
+                }`}>
+                  {order.status === 'in_production' ? 'Em Produção' :
+                   order.status === 'pending' ? 'Pendente' :
+                   'Atrasado'}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-3">
+                <div className="flex items-center gap-2">
+                  <ClipboardList className="h-4 w-4 text-blue-400" />
+                  <span className="pixel-text text-sm text-blue-300">
+                    Progresso: {Math.round(order.progress)}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-purple-400" />
+                  <span className="pixel-text text-sm text-purple-300">
+                    Eficiência: {Math.round(order.efficiency * 100)}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                {order.status === 'pending' ? (
+                  <PixelButton
+                    variant="success"
+                    size="sm"
+                    onClick={() => handleStartProduction(order.id)}
+                    className="flex-1"
+                    icon={<PlayCircle className="h-4 w-4" />}
+                  >
+                    Iniciar Produção
+                  </PixelButton>
+                ) : (
+                  <PixelButton
+                    variant="warning"
+                    size="sm"
+                    onClick={() => handlePauseProduction(order.id)}
+                    className="flex-1"
+                    icon={<PauseCircle className="h-4 w-4" />}
+                  >
+                    Pausar Produção
+                  </PixelButton>
+                )}
+              </div>
+            </PixelCard>
+          ))
+        ) : (
+          <PixelCard variant="glass">
+            <p className="text-center pixel-text text-gray-400">
+              Não há ordens de produção no momento.
+              <br />
+              Aceite pedidos na aba Comercial para começar a produzir.
+            </p>
+          </PixelCard>
+        )}
       </div>
     </div>
   );

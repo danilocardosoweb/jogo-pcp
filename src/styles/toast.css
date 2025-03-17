@@ -7,17 +7,38 @@
 
 [data-sonner-toast][data-type="success"] {
   border-color: #48bb78 !important;
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
 }
 
 [data-sonner-toast][data-type="error"] {
   border-color: #f56565 !important;
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
 }
 
 [data-sonner-toast][data-type="warning"] {
   border-color: #ed8936 !important;
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+
+[data-sonner-toast][data-type="info"] {
+  border-color: #4299e1 !important;
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
 }
 
 [data-sonner-toast] [data-title] {
   color: #ffffff !important;
   font-size: 0.875rem !important;
+}
+
+[data-sonner-toast] [data-description] {
+  color: #e2e8f0 !important;
+  font-size: 0.75rem !important;
+}
+
+[data-sonner-toast] [data-icon] {
+  color: #ffffff !important;
 }
