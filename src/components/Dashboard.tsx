@@ -33,7 +33,16 @@ const Dashboard: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold pixel-font text-game-primary">Fábrica Tech</h1>
+          <div className="flex flex-col items-center justify-center mb-8">
+            <img 
+              src="https://i.im.ge/2023/06/20/iZLJXM.logoDanilo.png" 
+              alt="Logo Danilo" 
+              className="w-10 h-10 mb-2 opacity-80 filter brightness-110 contrast-125"
+            />
+            <h1 className="text-3xl font-bold pixel-font text-game-primary">
+              Fábrica Tech
+            </h1>
+          </div>
           <p className="pixel-text">Dia: {state.day} | Saldo: ${state.money.toLocaleString('pt-BR')}</p>
         </div>
         <PixelButton onClick={handleEndDay} variant="warning">

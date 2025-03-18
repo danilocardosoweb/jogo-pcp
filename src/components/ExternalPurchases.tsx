@@ -3,6 +3,7 @@ import { useGame } from '@/context/GameContext';
 import { PixelCard } from './ui/PixelCard';
 import { PixelButton } from './ui/PixelButton';
 import { toast } from 'sonner';
+import NegotiationResult from './NegotiationResult';
 
 interface Supplier {
   id: number;
@@ -24,6 +25,8 @@ const ExternalPurchases: React.FC = () => {
   const [negotiationQuantity, setNegotiationQuantity] = useState<number>(0);
   const [showNegotiation, setShowNegotiation] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showResult, setShowResult] = useState(false);
+  const [isAccepted, setIsAccepted] = useState(false);
 
   // Gera fornecedores aleatórios com preços e prazos diferentes
   const generateSuppliers = (): Supplier[] => {
@@ -71,9 +74,8 @@ const ExternalPurchases: React.FC = () => {
     
     // Rejeita automaticamente se o preço proposto for menor que 80% do preço base
     if (priceRatio < 0.8) {
-      toast.error('Proposta rejeitada. O preço oferecido está muito abaixo do aceitável.', {
-        className: 'pixel-text bg-game-bg border-2 border-game-primary text-white'
-      });
+      setIsAccepted(false);
+      setShowResult(true);
       setShowNegotiation(false);
       return;
     }
@@ -83,6 +85,8 @@ const ExternalPurchases: React.FC = () => {
       (daysRatio >= 0.8 ? (daysRatio <= 1.5 ? 1 : 0.7) : 0.4);
     
     const accepted = Math.random() < acceptanceProbability;
+    setIsAccepted(accepted);
+    setShowResult(true);
 
     if (accepted) {
       dispatch({
@@ -94,7 +98,6 @@ const ExternalPurchases: React.FC = () => {
           deliveryDays: negotiationDays
         }
       });
-
       toast.success('Proposta aceita! O produto será entregue em breve.', {
         className: 'pixel-text bg-game-bg border-2 border-game-primary text-white'
       });
@@ -209,6 +212,11 @@ const ExternalPurchases: React.FC = () => {
           </PixelCard>
         </div>
       )}
+      <NegotiationResult 
+        isOpen={showResult}
+        isAccepted={isAccepted}
+        onClose={() => setShowResult(false)}
+      />
     </div>
   );
 };
