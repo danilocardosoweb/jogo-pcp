@@ -8,12 +8,12 @@ import { formatMoney } from '@/lib/utils';
 const ShippingDepartment: React.FC = () => {
   const { state, dispatch } = useGame();
   
-  const handleShipOrder = (orderId: string) => {
+  const handleShipOrder = (orderId: number) => {
     dispatch({ type: 'SHIP_PRODUCT', orderId });
   };
   
   const completedOrders = state.orders.filter(order => order.status === 'completed');
-  const inProgressOrders = state.orders.filter(order => order.status === 'in-progress');
+  const inProgressOrders = state.orders.filter(order => order.status === 'in_production');
   const failedOrders = state.orders.filter(order => order.status === 'failed');
   
   return (

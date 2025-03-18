@@ -1,9 +1,16 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { PixelCard } from './ui/PixelCard';
 import { PixelButton } from './ui/PixelButton';
 import { formatMoney } from '@/lib/utils';
+import { Clock } from 'lucide-react';
+
+// Função auxiliar para calcular a produção diária com base no tempo de produção
+const calculateDailyProduction = (productionTime: number): number => {
+  // O productionTime é o tempo para produzir uma unidade (em frações de dia)
+  // Por exemplo, 0.2 significa que leva 0.2 dias para produzir uma unidade, ou seja, 5 unidades por dia
+  return Math.round(1 / productionTime);
+};
 
 const InventoryManagement: React.FC = () => {
   const { state, dispatch } = useGame();
@@ -51,6 +58,14 @@ const InventoryManagement: React.FC = () => {
                   style={{ width: `${Math.min((state.inventory[product.type] / 20) * 100, 100)}%` }}
                 />
               </div>
+            </div>
+            
+            <div className="flex items-center justify-between mb-3 text-xs">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3 text-blue-400" />
+                <span className="pixel-text text-blue-300">Produção Diária:</span>
+              </div>
+              <span className="pixel-text font-bold">{calculateDailyProduction(product.productionTime)} unidades</span>
             </div>
             
             <div className="flex gap-2">

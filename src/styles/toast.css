@@ -42,3 +42,8 @@
 [data-sonner-toast] [data-icon] {
   color: #ffffff !important;
 }
+
+/* Garantir que o texto da notificação seja branco */
+[data-component-name="se"] {
+  color: #ffffff !important;
+}

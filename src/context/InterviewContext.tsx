@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useReducer } from 'react';
 
 // Interview question interface
@@ -20,6 +19,7 @@ export interface InterviewState {
   score: number;
   isPassed: boolean;
   isCompleted: boolean;
+  hasClockIn: boolean;
 }
 
 // Initial interview questions
@@ -84,13 +84,15 @@ const initialState: InterviewState = {
   score: 0,
   isPassed: false,
   isCompleted: false,
+  hasClockIn: false,
 };
 
 // Action types
 type InterviewAction =
   | { type: 'ANSWER_QUESTION'; optionId: number }
   | { type: 'NEXT_QUESTION' }
-  | { type: 'RESET_INTERVIEW' };
+  | { type: 'RESET_INTERVIEW' }
+  | { type: 'CLOCK_IN' };
 
 // Reducer function
 const interviewReducer = (state: InterviewState, action: InterviewAction): InterviewState => {
@@ -125,6 +127,13 @@ const interviewReducer = (state: InterviewState, action: InterviewAction): Inter
     
     case 'RESET_INTERVIEW': {
       return initialState;
+    }
+    
+    case 'CLOCK_IN': {
+      return {
+        ...state,
+        hasClockIn: true,
+      };
     }
     
     default:

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { PixelCard } from './ui/PixelCard';
@@ -46,9 +45,9 @@ const FactoryFloor: React.FC = () => {
   
   // Count products by status
   const productionStats = {
-    manufacturing: state.machines.filter(m => m.status === 'working' && !m.hasDefect).length,
-    packaging: state.machines.filter(m => m.status === 'packaging').length,
-    qualityControl: state.machines.filter(m => m.status === 'quality').length,
+    manufacturing: state.machines.filter(m => m.status === 'working' && !m.hasDefect && m.type === 'assembly').length,
+    packaging: state.machines.filter(m => m.status === 'working' && !m.hasDefect && m.type === 'packaging').length,
+    qualityControl: state.machines.filter(m => m.status === 'working' && !m.hasDefect && m.type === 'quality').length,
     defects: state.machines.filter(m => m.hasDefect).length
   };
   
@@ -188,6 +187,27 @@ const FactoryFloor: React.FC = () => {
                         {Math.floor((machine.progress / machine.maxProgress) * 100)}%
                       </span>
                     </div>
+                    
+                    {/* Display production stage */}
+                    <div className="flex items-center gap-1 text-xs mb-1">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs ${
+                        machine.type === 'assembly' ? 'bg-amber-100 text-amber-800' :
+                        machine.type === 'packaging' ? 'bg-blue-100 text-blue-800' :
+                        machine.type === 'quality' ? 'bg-green-100 text-green-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {machine.type === 'assembly' ? '🔧 Montagem' :
+                         machine.type === 'packaging' ? '📦 Embalagem' :
+                         machine.type === 'quality' ? '🔍 Controle de Qualidade' :
+                         '⚙️ Produção'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {machine.type === 'assembly' ? '→ Embalagem → Qualidade' :
+                         machine.type === 'packaging' ? '→ Qualidade → Finalizado' :
+                         machine.type === 'quality' ? '→ Finalizado' : ''}
+                      </span>
+                    </div>
+                    
                     <Progress 
                       value={Math.floor((machine.progress / machine.maxProgress) * 100)} 
                       className={`h-2 ${
@@ -226,31 +246,37 @@ const FactoryFloor: React.FC = () => {
                   {machine.status === 'idle' ? (
                     <>
                       <div className="w-full">
-                        <select 
-                          className="pixel-input w-full mb-2"
-                          onChange={(e) => handleAssignMachine(machine.id, e.target.value)}
-                          defaultValue=""
-                        >
-                          <option value="" disabled>Atribuir Produto</option>
-                          {state.products.map(product => {
-                            // Check if we have resources for this product
-                            const canProduce = Object.entries(product.requires).every(([resourceType, amount]) => {
-                              const resource = state.resources.find((r) => r.type === resourceType as any);
-                              return resource && resource.quantity >= (amount as number);
-                            });
-                            
-                            return (
-                              <option 
-                                key={product.type} 
-                                value={product.type}
-                                disabled={!canProduce}
-                              >
-                                {product.icon} {product.name}
-                                {!canProduce ? ' (Faltam recursos)' : ''}
-                              </option>
-                            );
-                          })}
-                        </select>
+                        {machine.type === 'assembly' ? (
+                          <select 
+                            className="pixel-input w-full mb-2"
+                            onChange={(e) => handleAssignMachine(machine.id, e.target.value)}
+                            defaultValue=""
+                          >
+                            <option value="" disabled>Atribuir Produto</option>
+                            {state.products.map(product => {
+                              // Check if we have resources for this product
+                              const canProduce = Object.entries(product.requires).every(([resourceType, amount]) => {
+                                const resource = state.resources.find((r) => r.type === resourceType as any);
+                                return resource && resource.quantity >= (amount as number);
+                              });
+                              
+                              return (
+                                <option 
+                                  key={product.type} 
+                                  value={product.type}
+                                  disabled={!canProduce}
+                                >
+                                  {product.icon} {product.name}
+                                  {!canProduce ? ' (Faltam recursos)' : ''}
+                                </option>
+                              );
+                            })}
+                          </select>
+                        ) : (
+                          <div className="pixel-input w-full mb-2 text-center text-gray-500">
+                            {machine.type === 'packaging' ? 'Aguardando produtos da linha de montagem' : 'Aguardando produtos da embalagem'}
+                          </div>
+                        )}
                       </div>
                       <PixelButton 
                         variant="success" 

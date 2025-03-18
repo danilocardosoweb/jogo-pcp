@@ -5,10 +5,11 @@ import { PixelCard } from './ui/PixelCard';
 import { toast } from 'sonner';
 import { useGame } from '@/context/GameContext';
 import { User, UserCircle2 } from 'lucide-react';
+import ClockInAnimation from './ClockInAnimation';
 
 const JobInterview: React.FC = () => {
   const { state, dispatch } = useInterview();
-  const { state: gameState } = useGame();
+  const { state: gameState, dispatch: gameDispatch } = useGame();
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   
   const handleSelectOption = (optionId: number) => {
@@ -134,27 +135,30 @@ const JobInterview: React.FC = () => {
           </div>
         </div>
       ) : (
-        <InterviewResult />
+        <InterviewResults />
       )}
+      
+      {/* Componente de animação de bater ponto */}
+      <ClockInAnimation />
     </div>
   );
 };
 
-// Interview results component
-const InterviewResult: React.FC = () => {
+// Componente para exibir os resultados da entrevista
+const InterviewResults: React.FC = () => {
   const { state, dispatch } = useInterview();
-  const { state: gameState, dispatch: gameDispatch } = useGame();
+  const { dispatch: gameDispatch } = useGame();
   
   const handleReset = () => {
     dispatch({ type: 'RESET_INTERVIEW' });
   };
-
+  
   const handleStartWork = () => {
-    // Start the simulation
-    gameDispatch({ type: 'START_SIMULATION' });
+    // Disparar a ação de bater o ponto em vez de iniciar a simulação diretamente
+    dispatch({ type: 'CLOCK_IN' });
     
-    // Show welcome message using toast
-    toast('Bem-vindo ao seu primeiro dia como Analista de PCP!', {
+    // A simulação será iniciada pelo componente ClockInAnimation após a animação
+    toast('Parabéns pela contratação! Vamos registrar seu ponto.', {
       duration: 5000,
       className: 'pixel-text bg-game-bg border-2 border-game-primary text-white',
     });
@@ -170,34 +174,13 @@ const InterviewResult: React.FC = () => {
             className="w-full h-full object-cover"
           />
         </div>
-        
-        <div className="mx-4 text-4xl pixel-font text-game-secondary">
-          {state.isPassed ? "→" : "✕"}
-        </div>
-        
-        <div className="bg-game-secondary p-2 rounded-full w-20 h-20 flex items-center justify-center mx-auto">
-          {gameState.character ? (
-            <img
-              src={gameState.character.image}
-              alt={gameState.character.name}
-              className="w-full h-full object-cover rounded-full"
-            />
-          ) : (
-            <User size={48} className="text-white" />
-          )}
-        </div>
       </div>
       
-      <h3 className="text-xl pixel-font mb-4">
-        {state.isPassed 
-          ? "Parabéns! Você foi contratado!" 
-          : "Infelizmente você não foi selecionado para a vaga."}
+      <h3 className="text-xl pixel-font text-game-primary mb-4">
+        {state.isPassed ? "Você foi aprovado!" : "Você não foi aprovado"}
       </h3>
       
       <div className="mb-6">
-        <p className="pixel-text text-game-secondary mb-2">
-          Sua pontuação final:
-        </p>
         <p className="text-2xl pixel-font text-game-primary">
           {state.score} / 50
         </p>
