@@ -30,107 +30,107 @@ const Dashboard: React.FC = () => {
   };
   
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 sm:mb-6">
         <div>
-          <div className="flex flex-col items-center justify-center mb-8">
+          <div className="flex flex-col items-center justify-center mb-4 sm:mb-8">
             <img 
               src="https://i.im.ge/2023/06/20/iZLJXM.logoDanilo.png" 
               alt="Logo Danilo" 
-              className="w-10 h-10 mb-2 opacity-80 filter brightness-110 contrast-125"
+              className="w-8 h-8 sm:w-10 sm:h-10 mb-2 opacity-80 filter brightness-110 contrast-125"
             />
-            <h1 className="text-3xl font-bold pixel-font text-game-primary">
+            <h1 className="text-2xl sm:text-3xl font-bold pixel-font text-game-primary">
               Fábrica Tech
             </h1>
           </div>
-          <p className="pixel-text">Dia: {state.day} | Saldo: ${state.money.toLocaleString('pt-BR')}</p>
+          <p className="pixel-text text-sm sm:text-base">Dia: {state.day} | Saldo: ${state.money.toLocaleString('pt-BR')}</p>
         </div>
-        <PixelButton onClick={handleEndDay} variant="warning">
+        <PixelButton onClick={handleEndDay} variant="warning" className="mt-4 sm:mt-0">
           Avançar um Dia
         </PixelButton>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-        <TabsList className="mb-4 grid grid-cols-1 md:grid-cols-8 gap-2 bg-transparent">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4 sm:mb-8">
+        <TabsList className="mb-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 sm:gap-2 bg-transparent">
           <TabsTrigger 
             value="resources" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'resources' 
                 ? 'bg-blue-100 text-blue-800 border-2 border-blue-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Database className="h-4 w-4" /> Recursos
+            <Database className="h-3 w-3 sm:h-4 sm:w-4" /> Recursos
           </TabsTrigger>
           <TabsTrigger 
             value="commercial" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'commercial' 
                 ? 'bg-orange-100 text-orange-800 border-2 border-orange-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Store className="h-4 w-4" /> Comercial
+            <Store className="h-3 w-3 sm:h-4 sm:w-4" /> Comercial
           </TabsTrigger>
           <TabsTrigger 
             value="production" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'production' 
                 ? 'bg-green-100 text-green-800 border-2 border-green-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Factory className="h-4 w-4" /> Planejamento
+            <Factory className="h-3 w-3 sm:h-4 sm:w-4" /> Planejamento
           </TabsTrigger>
           <TabsTrigger 
             value="factory" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'factory' 
                 ? 'bg-amber-100 text-amber-800 border-2 border-amber-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Warehouse className="h-4 w-4" /> Fábrica
+            <Warehouse className="h-3 w-3 sm:h-4 sm:w-4" /> Fábrica
           </TabsTrigger>
           <TabsTrigger 
             value="inventory" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'inventory' 
                 ? 'bg-indigo-100 text-indigo-800 border-2 border-indigo-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Package className="h-4 w-4" /> Inventário
+            <Package className="h-3 w-3 sm:h-4 sm:w-4" /> Inventário
           </TabsTrigger>
           <TabsTrigger 
             value="shipping" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'shipping' 
                 ? 'bg-purple-100 text-purple-800 border-2 border-purple-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <TruckIcon className="h-4 w-4" /> Envios
+            <TruckIcon className="h-3 w-3 sm:h-4 sm:w-4" /> Envios
           </TabsTrigger>
           <TabsTrigger 
             value="hr" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'hr' 
                 ? 'bg-pink-100 text-pink-800 border-2 border-pink-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <Users className="h-4 w-4" /> RH
+            <Users className="h-3 w-3 sm:h-4 sm:w-4" /> RH
           </TabsTrigger>
           <TabsTrigger 
             value="finance" 
-            className={`flex items-center gap-2 pixel-text font-medium ${
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
               activeTab === 'finance' 
                 ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-400' 
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
-            <DollarSign className="h-4 w-4" /> Finanças
+            <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" /> Finanças
           </TabsTrigger>
         </TabsList>
         
