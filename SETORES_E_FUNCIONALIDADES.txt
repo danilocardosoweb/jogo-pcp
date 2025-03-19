@@ -1,0 +1,59 @@
+JOGO PCP - SETORES E FUNCIONALIDADES (v1.005)
+===========================================
+
+1. DEPARTAMENTO COMERCIAL
+- Gerenciamento de pedidos de clientes
+- Análise de demanda de produtos
+- Interação com clientes
+- Registro de reclamações de clientes
+
+2. LINHA DE MONTAGEM (FACTORY FLOOR)
+- Botão "Iniciar Produção"
+- Modal de seleção de produtos
+- Controle de produção em tempo real
+- Acompanhamento do processo de montagem
+
+3. PLANEJAMENTO DE PRODUÇÃO
+- Definição de estratégias de produção
+- Alocação de recursos
+- Otimização do fluxo de produção
+
+4. DASHBOARD
+- Visualização de métricas de produção
+- Gráficos de desempenho
+- Resumo de indicadores-chave
+
+5. SISTEMA DE AJUDA E INSTRUÇÕES
+- Botão de ajuda principal
+- Botões de dicas específicos para cada seção
+- Modal interativo com informações detalhadas
+- Guia completo sobre:
+  * Como jogar
+  * Fluxo de produção
+  * Dicas para cada área do jogo
+
+6. INTERFACE GERAL
+- Animação de entrada (Clock In)
+- Cabeçalho do jogo
+- Tema visual com cores pixel art
+- Responsividade e design adaptativo
+
+7. SISTEMA DE VERSÕES
+- Versionamento incremental (v1.XXX)
+- Atualização regular no GitHub
+- Registro de melhorias e novas funcionalidades
+
+HISTÓRICO DE VERSÕES
+-------------------
+v1.002 (18/03/2025): Versão inicial
+v1.003 (19/03/2025): Adicionado botão "Iniciar Produção"
+v1.004 (19/03/2025): 
+- Sistema de ajuda e instruções
+- Melhoria nas cores do texto do manual
+v1.005 (19/03/2025): Atualização de versão e correções gerais
+
+PRÓXIMAS IMPLEMENTAÇÕES
+----------------------
+- Melhorias no sistema de reclamações de clientes
+- Aprimoramento das métricas de produção
+- Expansão do sistema de dicas e tutoriais

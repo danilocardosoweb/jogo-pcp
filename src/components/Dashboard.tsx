@@ -7,6 +7,7 @@ import ShippingDepartment from './ShippingDepartment';
 import HRDepartment from './HRDepartment';
 import FinanceDepartment from './FinanceDepartment';
 import CommercialDepartment from './CommercialDepartment';
+import Indicators from './Indicators';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Database, 
@@ -75,7 +76,7 @@ const Dashboard: React.FC = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4 sm:mb-8">
-        <TabsList className="mb-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-1 sm:gap-2 bg-transparent">
+        <TabsList className="mb-4 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-9 gap-1 sm:gap-2 bg-transparent">
           <TabsTrigger 
             value="resources" 
             className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
@@ -158,6 +159,16 @@ const Dashboard: React.FC = () => {
             }`}
           >
             <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" /> Finanças
+          </TabsTrigger>
+          <TabsTrigger 
+            value="indicators" 
+            className={`flex items-center gap-1 sm:gap-2 pixel-text text-xs sm:text-sm font-medium ${
+              activeTab === 'indicators' 
+                ? 'bg-red-100 text-red-800 border-2 border-red-400' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            <Info className="h-3 w-3 sm:h-4 sm:w-4" /> Indicadores
           </TabsTrigger>
         </TabsList>
         
@@ -250,6 +261,17 @@ const Dashboard: React.FC = () => {
               Dicas: Finanças
             </PixelButton>
           )}
+          {activeTab === 'indicators' && (
+            <PixelButton 
+              onClick={() => openHelp('indicadores')} 
+              variant="ghost" 
+              size="sm"
+              className="flex items-center gap-1 text-xs"
+              icon={<Lightbulb className="h-3 w-3 text-yellow-500" />}
+            >
+              Dicas: Indicadores
+            </PixelButton>
+          )}
         </div>
         
         <TabsContent value="resources">
@@ -282,6 +304,10 @@ const Dashboard: React.FC = () => {
         
         <TabsContent value="finance">
           <FinanceDepartment />
+        </TabsContent>
+        
+        <TabsContent value="indicators">
+          <Indicators />
         </TabsContent>
       </Tabs>
 
