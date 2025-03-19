@@ -52,7 +52,7 @@ const GameHeader: React.FC = () => {
     <header className="w-full bg-game-bg border-b-2 border-game-secondary px-4 py-3 flex justify-between items-center animate-fade-in">
       <div className="flex items-center gap-3">
         <h1 className="text-2xl md:text-3xl pixel-font text-game-accent">Simulador PCP</h1>
-        <span className="bg-game-primary text-white px-2 py-1 rounded-sm text-xs pixel-text">v1.001 - 18/03/2025</span>
+        <span className="bg-game-primary text-white px-2 py-1 rounded-sm text-xs pixel-text">v1.005 - 19/03/2025</span>
       </div>
       
       <div className="flex items-center gap-4">

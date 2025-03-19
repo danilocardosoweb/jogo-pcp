@@ -19,7 +19,7 @@ const Index = () => {
             
             <footer className="text-center mt-8 py-4 border-t border-game-secondary">
               <p className="pixel-text text-xs text-game-secondary">
-                Simulador PCP v1.0 - Jogo de Planejamento e Controle da Produção
+                Simulador PCP v1.005 - Jogo de Planejamento e Controle da Produção
               </p>
             </footer>
           </main>

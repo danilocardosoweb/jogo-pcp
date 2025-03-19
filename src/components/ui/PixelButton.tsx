@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface PixelButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'destructive';
+  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'destructive' | 'outline' | 'ghost' | 'default';
   size?: 'sm' | 'md' | 'lg';
   icon?: React.ReactNode;
   iconPosition?: 'left' | 'right';
@@ -18,6 +17,9 @@ const PixelButton = React.forwardRef<HTMLButtonElement, PixelButtonProps>(
       warning: 'bg-game-warning text-white border-2 border-amber-700 hover:bg-amber-600',
       danger: 'bg-game-danger text-white border-2 border-red-700 hover:bg-red-600',
       destructive: 'bg-red-600 text-white border-2 border-red-800 hover:bg-red-700',
+      outline: 'bg-transparent text-game-primary border-2 border-game-primary hover:bg-game-primary/10',
+      ghost: 'bg-transparent text-gray-600 border-0 hover:bg-gray-100 hover:text-gray-800',
+      default: 'bg-white text-gray-800 border-2 border-gray-300 hover:bg-gray-100',
     };
 
     const sizeClasses = {

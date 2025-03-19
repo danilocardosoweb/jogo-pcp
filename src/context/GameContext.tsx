@@ -196,7 +196,7 @@ export interface GameState {
 }
 
 // Action types
-type GameAction =
+export type GameAction =
   | { type: 'BUY_RESOURCE'; resourceType: ResourceType; amount: number }
   | { type: 'ASSIGN_MACHINE'; machineId: string; productType: ProductType }
   | { type: 'UNASSIGN_MACHINE'; machineId: string }
@@ -224,7 +224,9 @@ type GameAction =
   | { type: 'TAKE_LOAN'; loanAmount: number; duration: number; interestRate: number }
   | { type: 'START_SIMULATION' } // New action to start the simulation
   | { type: 'UNLOCK_PRODUCT'; productType: ProductType }
-  | { type: 'EXTERNAL_PURCHASE'; payload: { productType: ProductType; quantity: number; price: number; deliveryDays: number } };
+  | { type: 'EXTERNAL_PURCHASE'; payload: { productType: ProductType; quantity: number; price: number; deliveryDays: number } }
+  | { type: 'UPDATE_ORDER_DEADLINE'; orderId: number; newDeadline: number; penaltyAmount: number }
+  | { type: 'CANCEL_DELAYED_ORDER'; orderId: number; penaltyAmount: number };
 
 // Worker names pool
 // Lista de nomes de trabalhadores disponíveis para contratação
@@ -1451,11 +1453,31 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       
       const order = state.orders[orderIndex];
       
+      // Encontrar uma máquina de montagem disponível
+      const availableMachine = state.machines.find(
+        m => m.type === 'assembly' && m.status === 'idle'
+      );
+      
+      if (!availableMachine) return state;
+      
+      // Atualizar a máquina para atribuí-la ao pedido
+      const updatedMachines = state.machines.map(m => 
+        m.id === availableMachine.id 
+          ? { 
+              ...m, 
+              status: 'working' as MachineStatus, 
+              currentProduct: order.product,
+              assignedTo: order.id.toString()
+            } 
+          : m
+      );
+      
       return {
         ...state,
         orders: state.orders.map((o, i) =>
           i === orderIndex ? { ...o, status: 'in_production' } : o
         ),
+        machines: updatedMachines
       };
     }
     
@@ -1534,6 +1556,57 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
         ...state,
         money: state.money - totalCost,
         orders: [...state.orders, newOrder]
+      };
+    }
+    
+    case 'UPDATE_ORDER_DEADLINE': {
+      const { orderId, newDeadline, penaltyAmount } = action;
+      const orderIndex = state.orders.findIndex(o => o.id === orderId);
+      
+      if (orderIndex === -1) return state;
+      
+      const order = state.orders[orderIndex];
+      
+      if (order.status !== 'pending' && order.status !== 'in_production') return state;
+      
+      const updatedOrders = state.orders.map((o, i) => {
+        if (i === orderIndex) {
+          return {
+            ...o,
+            deadline: newDeadline,
+            daysLeft: newDeadline - state.day,
+            penalty: penaltyAmount
+          };
+        }
+        return o;
+      });
+      
+      return {
+        ...state,
+        orders: updatedOrders
+      };
+    }
+    
+    case 'CANCEL_DELAYED_ORDER': {
+      const { orderId, penaltyAmount } = action;
+      const orderIndex = state.orders.findIndex(o => o.id === orderId);
+      
+      if (orderIndex === -1) return state;
+      
+      const order = state.orders[orderIndex];
+      
+      if (order.status !== 'pending' && order.status !== 'in_production') return state;
+      
+      const updatedOrders = state.orders.filter(o => o.id !== orderId);
+      
+      return {
+        ...state,
+        orders: updatedOrders,
+        money: state.money - penaltyAmount,
+        stats: {
+          ...state.stats,
+          ordersFailed: state.stats.ordersFailed + 1
+        }
       };
     }
     

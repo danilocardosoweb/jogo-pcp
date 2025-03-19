@@ -95,9 +95,9 @@ const ProductionPlanner: React.FC = () => {
     const order = state.orders.find(o => o.id === orderId);
     if (!order) return false;
 
-    // Verificar se há máquinas disponíveis para o produto
+    // Verificar se há máquinas de montagem disponíveis para o produto
     const availableMachines = state.machines.filter(
-      m => m.currentProduct === order.product && m.status === 'idle'
+      m => m.type === 'assembly' && m.status === 'idle'
     );
 
     return availableMachines.length > 0;
