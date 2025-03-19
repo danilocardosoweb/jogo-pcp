@@ -2,15 +2,18 @@ import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { PixelCard } from './ui/PixelCard';
 import { PixelButton } from './ui/PixelButton';
-import { Building, Plus, Trash, RefreshCw, PackageCheck, AlertTriangle, ShieldCheck, Zap, Clock, Wrench, Users } from 'lucide-react';
+import { Building, Plus, Trash, RefreshCw, PackageCheck, AlertTriangle, ShieldCheck, Zap, Clock, Wrench, Users, Play } from 'lucide-react';
 import BuyMachineModal from './BuyMachineModal';
 import { Progress } from './ui/progress';
 import { toast } from 'sonner';
 import { formatMoney } from '@/lib/utils';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const FactoryFloor: React.FC = () => {
   const { state, dispatch } = useGame();
   const [buyMachineOpen, setBuyMachineOpen] = useState(false);
+  const [selectProductOpen, setSelectProductOpen] = useState(false);
+  const [selectedMachineId, setSelectedMachineId] = useState<string | null>(null);
   
   const handleAssignMachine = (machineId: string, productType: any) => {
     dispatch({ type: 'ASSIGN_MACHINE', machineId, productType });
@@ -41,6 +44,11 @@ const FactoryFloor: React.FC = () => {
   const handleApplyBooster = (machineId: string) => {
     dispatch({ type: 'APPLY_BOOSTER', machineId, duration: 5 });
     toast.success('Booster de manutenção aplicado por 5 dias!');
+  };
+  
+  const handleStartProduction = (machineId: string) => {
+    setSelectedMachineId(machineId);
+    setSelectProductOpen(true);
   };
   
   // Count products by status
@@ -233,6 +241,17 @@ const FactoryFloor: React.FC = () => {
                     </>
                   ) : (
                     <>
+                      {machine.status === 'idle' && machine.type === 'assembly' && (
+                        <PixelButton
+                          variant="success"
+                          size="sm"
+                          onClick={() => handleStartProduction(machine.id)}
+                          className="text-[10px] sm:text-xs py-0.5 flex-1"
+                          icon={<Play className="h-3 w-3 sm:h-4 sm:w-4" />}
+                        >
+                          Iniciar Produção
+                        </PixelButton>
+                      )}
                       <PixelButton
                         variant="secondary"
                         size="sm"
@@ -270,7 +289,120 @@ const FactoryFloor: React.FC = () => {
       </div>
       
       <BuyMachineModal open={buyMachineOpen} onOpenChange={setBuyMachineOpen} />
+      <SelectProductModal 
+        open={selectProductOpen} 
+        onOpenChange={setSelectProductOpen} 
+        machineId={selectedMachineId} 
+      />
     </div>
+  );
+};
+
+interface SelectProductModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  machineId: string | null;
+}
+
+const SelectProductModal: React.FC<SelectProductModalProps> = ({ open, onOpenChange, machineId }) => {
+  const { state, dispatch } = useGame();
+  const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
+  
+  const handleAssignProduct = () => {
+    if (machineId && selectedProduct) {
+      dispatch({ 
+        type: 'ASSIGN_MACHINE', 
+        machineId, 
+        productType: selectedProduct as any 
+      });
+      onOpenChange(false);
+      toast.success(`Produção iniciada: ${state.products.find(p => p.type === selectedProduct)?.name}`);
+    }
+  };
+  
+  // Filtrar apenas produtos desbloqueados
+  const availableProducts = state.products.filter(product => 
+    state.unlockedProducts.includes(product.type)
+  );
+  
+  // Verificar se há recursos suficientes para cada produto
+  const canProduce = (product: any) => {
+    return Object.entries(product.requires).every(([resourceType, amount]) => {
+      const resource = state.resources.find(r => r.type === resourceType);
+      return resource && resource.quantity >= (amount as number);
+    });
+  };
+  
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px] bg-white border-4 border-game-primary">
+        <DialogHeader>
+          <DialogTitle className="text-xl pixel-font text-black">Selecionar Produto</DialogTitle>
+          <DialogDescription className="pixel-text text-gray-800">
+            Escolha o produto que deseja fabricar.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-4">
+          <div className="grid grid-cols-1 gap-4">
+            {availableProducts.map(product => (
+              <div
+                key={product.type}
+                className={`p-4 rounded-md border-2 ${
+                  selectedProduct === product.type 
+                    ? 'border-amber-400 bg-amber-50' 
+                    : canProduce(product) 
+                      ? 'border-gray-200 hover:border-amber-200 cursor-pointer' 
+                      : 'border-gray-200 bg-gray-50 opacity-60 cursor-not-allowed'
+                } ${canProduce(product) ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                onClick={() => canProduce(product) && setSelectedProduct(product.type)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">{product.icon}</div>
+                  <div className="flex-1">
+                    <h3 className="font-bold pixel-text text-black">{product.name}</h3>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {Object.entries(product.requires).map(([resourceType, amount]) => {
+                        const resource = state.resources.find(r => r.type === resourceType);
+                        const hasEnough = resource && resource.quantity >= (amount as number);
+                        
+                        return (
+                          <span 
+                            key={resourceType} 
+                            className={`text-xs px-1.5 py-0.5 rounded ${
+                              hasEnough ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}
+                          >
+                            {resource?.icon} {amount}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="pixel-text font-bold text-amber-700">R$ {product.price}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <DialogFooter>
+          <PixelButton
+            variant="secondary"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </PixelButton>
+          <PixelButton
+            variant="primary"
+            onClick={handleAssignProduct}
+            disabled={!selectedProduct}
+          >
+            Iniciar Produção
+          </PixelButton>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
 
